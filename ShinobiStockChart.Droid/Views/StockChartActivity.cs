@@ -26,6 +26,12 @@ namespace ShinobiStockChart.Droid.Views
         {
             if (_priceSeries == null) {
                 _priceSeries = new LineSeries ();
+                _priceSeries.Style.FillStyle = SeriesStyle.FillStyle.Gradient;
+                _priceSeries.Style.AreaColor = Resources.GetColor (Resource.Color.chart_series1_area);
+                _priceSeries.Style.AreaLineColor = Resources.GetColor (Resource.Color.chart_series1_line);
+                _priceSeries.Style.AreaColorGradient = Resources.GetColor (Resource.Color.chart_series1_area_low);
+                _priceSeries.Style.AreaLineWidth = 1.5f;
+
                 _chart.AddSeries (_priceSeries);
             }
 
