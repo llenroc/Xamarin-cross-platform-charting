@@ -42,20 +42,6 @@ namespace ShinobiStockChart.Touch.Views
             chartHostView.Hidden = false;
         }
 
-        public event EventHandler<MovingAverageRequestedEventArgs> MovingAverageRequested = delegate { };
-
-        public void UpdateChartWithMovingAverage (List<ChartDataPoint> data)
-        {
-            _chartDataSource.MovingAverageDataPoints = data.Select (dp => new SChartDataPoint () {
-                XValue = dp.XValue.ToNSDate (),
-                YValue = new NSNumber (dp.YValue)
-            })
-                .Cast<SChartData> ()
-                .ToList ();
-            _chart.ReloadData ();
-            _chart.RedrawChart ();
-        }
-
         #endregion
 
         private ShinobiChart _chart;
@@ -112,9 +98,7 @@ namespace ShinobiStockChart.Touch.Views
                                         new string[] { "Cancel" });
                     alertView.Clicked += (alertSender, button) => {
                         if(button.ButtonIndex == 0) {
-                            MovingAverageRequested(this, new MovingAverageRequestedEventArgs (
-                                int.Parse (alertView.GetTextField (0).Text))
-                            );
+                            Console.WriteLine ("Moving Average Requested (window {0})", int.Parse (alertView.GetTextField (0).Text));
                         }
                     };
                     alertView.AlertViewStyle = UIAlertViewStyle.PlainTextInput;
@@ -138,7 +122,6 @@ namespace ShinobiStockChart.Touch.Views
         private class StockChartDataSource : SChartDataSource
         {
             private List<SChartData> _dataPoints;
-            private List<SChartData> _movingAverageDataPoints;
 
             public UIColor TintColor { get; set; }
 
@@ -153,11 +136,6 @@ namespace ShinobiStockChart.Touch.Views
                 }
             }
 
-            public List<SChartData> MovingAverageDataPoints {
-                set {
-                    _movingAverageDataPoints = value;
-                }
-            }
 
             public override SChartData GetDataPoint (ShinobiChart chart, int dataIndex, int seriesIndex)
             {
@@ -167,52 +145,30 @@ namespace ShinobiStockChart.Touch.Views
 
             protected override SChartData[] GetDataPoints (ShinobiChart chart, int seriesIndex)
             {
-                // Bit convoluted to get the z-index correct
-                if(_movingAverageDataPoints == null || seriesIndex == 1) {
-                    return _dataPoints.ToArray ();
-                } else {
-                    return _movingAverageDataPoints.ToArray ();
-                }
+                 return _dataPoints.ToArray ();
             }
 
             public override int GetNumberOfSeries (ShinobiChart chart)
             {
-                if(_movingAverageDataPoints != null) {
-                    return 2;
-                } else {
-                    return 1;
-                }
+                return 1;
             }
 
             public override int GetNumberOfDataPoints (ShinobiChart chart, int seriesIndex)
             {
-                // Bit convoluted to get the z-index correct
-                if(_movingAverageDataPoints == null || seriesIndex == 1) {
-                    return _dataPoints.Count;
-                } else {
-                    return _movingAverageDataPoints.Count;
-                }
+                return _dataPoints.Count;
             }
 
             public override SChartSeries GetSeries (ShinobiChart chart, int index)
             {
                 var lineSeries = new SChartLineSeries ();
-         
-                // Bit convoluted to get the z-index correct
-                if (_movingAverageDataPoints == null || index == 1) {
-                    lineSeries.Style.AreaLineColor = TintColor;
-                    lineSeries.Style.AreaColor = TintColor.ColorWithAlpha (0.1f);
-                    lineSeries.Style.AreaColorLowGradient = TintColor.ColorWithAlpha (0.8f);
-                    lineSeries.Style.AreaLineWidth = 1.0;
-                    lineSeries.Style.ShowFill = true;
-                    lineSeries.CrosshairEnabled = true;
-                } else {
-                    lineSeries.Style.LineColor = UIColor.Red.ColorWithAlpha (0.8f);
-                    lineSeries.Style.LineWidth = 1.0;
-                    lineSeries.Style.ShowFill = false;
-                    lineSeries.CrosshairEnabled = false;
-                }
-        
+
+                lineSeries.Style.AreaLineColor = TintColor;
+                lineSeries.Style.AreaColor = TintColor.ColorWithAlpha (0.1f);
+                lineSeries.Style.AreaColorLowGradient = TintColor.ColorWithAlpha (0.8f);
+                lineSeries.Style.AreaLineWidth = 1.0;
+                lineSeries.Style.ShowFill = true;
+                lineSeries.CrosshairEnabled = true;
+
                 return lineSeries;
             }
         }
