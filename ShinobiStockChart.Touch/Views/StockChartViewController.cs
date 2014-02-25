@@ -161,14 +161,6 @@ namespace ShinobiStockChart.Touch.Views
             public override SChartSeries GetSeries (ShinobiChart chart, int index)
             {
                 var lineSeries = new SChartLineSeries ();
-
-                lineSeries.Style.AreaLineColor = TintColor;
-                lineSeries.Style.AreaColor = TintColor.ColorWithAlpha (0.1f);
-                lineSeries.Style.AreaColorLowGradient = TintColor.ColorWithAlpha (0.8f);
-                lineSeries.Style.AreaLineWidth = 1.0;
-                lineSeries.Style.ShowFill = true;
-                lineSeries.CrosshairEnabled = true;
-
                 return lineSeries;
             }
         }
