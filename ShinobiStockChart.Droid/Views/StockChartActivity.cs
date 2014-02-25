@@ -20,6 +20,26 @@ namespace ShinobiStockChart.Droid.Views
     [Activity (Label = "StockChartActivity")]			
     public class StockChartActivity : Activity, StockChartPresenter.View
     {
+        public event EventHandler<MovingAverageRequestedEventArgs> MovingAverageRequested = delegate { };
+
+        public void UpdateChartWithMovingAverage (List<ChartDataPoint> data)
+        {
+            if (_movingAverageSeries == null) {
+                _movingAverageSeries = new LineSeries ();
+                _movingAverageSeries.Style.LineColor = Resources.GetColor (Resource.Color.chart_series2_line);
+                _movingAverageSeries.Style.LineWidth = 1.5f;
+                _chart.AddSeries (_movingAverageSeries);
+            }
+
+            _movingAverageSeries.DataAdapter = new SimpleDataAdapter ();
+            _movingAverageSeries.DataAdapter.AddAll (data
+                            .Select (dp => 
+                                new DataPoint (DateUtils.ConvertToJavaDate (dp.XValue), dp.YValue))
+                            .ToList ()
+            );
+
+        }
+
         #region View implementation
 
         public void UpdateChartWithData (List<ChartDataPoint> data)
@@ -60,6 +80,8 @@ namespace ShinobiStockChart.Droid.Views
         private String _chartTitle;
         private ProgressDialog _progressDialog;
         private LineSeries _priceSeries;
+        private LineSeries _movingAverageSeries;
+
 
         protected override void OnCreate (Bundle bundle)
         {
@@ -121,7 +143,7 @@ namespace ShinobiStockChart.Droid.Views
                 return true;
             case Resource.Id.action_add_moving_average:
                 var dialog = new MovingAveragePeriodDialogFragment ((period) => {
-                    Console.WriteLine ("Moving Average Requested (window {0})", period);
+                    MovingAverageRequested(this, new MovingAverageRequestedEventArgs (period));
                 });
                 dialog.Show(FragmentManager, "Moving Average Dialog");
                 return true;
