@@ -15,6 +15,21 @@ namespace ShinobiStockChart.Touch.Views
 {
     public partial class StockChartViewController : UIViewController, StockChartPresenter.View
     {
+        public event EventHandler<MovingAverageRequestedEventArgs> MovingAverageRequested = delegate { };
+
+        public void UpdateChartWithMovingAverage (List<ChartDataPoint> data)
+        {
+            _dataSource.MovingAverageDataPoints = data.Select (dp => new SChartDataPoint () {
+                XValue = dp.XValue.ToNSDate (),
+                YValue = new NSNumber (dp.YValue)
+            })
+                .Cast<SChartData> ()
+                .ToList ();
+            _chart.ReloadData ();
+            _chart.RedrawChart ();
+
+        }
+
         #region View implementation
 
         public string ChartTitle {
@@ -98,7 +113,9 @@ namespace ShinobiStockChart.Touch.Views
                                         new string[] { "Cancel" });
                     alertView.Clicked += (alertSender, button) => {
                         if(button.ButtonIndex == 0) {
-                            Console.WriteLine ("Moving Average Requested (window {0})", int.Parse (alertView.GetTextField (0).Text));
+                            MovingAverageRequested(this, new MovingAverageRequestedEventArgs (
+                                                            int.Parse (alertView.GetTextField (0).Text))
+                            );
                         }
                     };
                     alertView.AlertViewStyle = UIAlertViewStyle.PlainTextInput;
@@ -121,6 +138,17 @@ namespace ShinobiStockChart.Touch.Views
         private class StockChartDataSource : SChartDataSource
         {
             private List<SChartData> _dataPoints;
+            private List<SChartData> _movingAverageDataPoints;
+
+            public List<SChartData> MovingAverageDataPoints {
+                get {
+                    return _movingAverageDataPoints;
+                }
+                set {
+                    _movingAverageDataPoints = value;
+                }
+            }
+
 
             public List<SChartData> DataPoints {
                 get {
@@ -142,25 +170,40 @@ namespace ShinobiStockChart.Touch.Views
 
             public override int GetNumberOfSeries (ShinobiChart chart)
             {
-                return 1;
+                if(_movingAverageDataPoints != null) {
+                    return 2;
+                } else {
+                    return 1;
+                }
             }
 
             public override SChartSeries GetSeries (ShinobiChart chart, int dataSeriesIndex)
             {
                 var lineSeries = new SChartLineSeries ();
-                lineSeries.Style.ShowFill = true;
-                lineSeries.Style.AreaLineColor = TintColor;
-                lineSeries.Style.AreaColor = TintColor.ColorWithAlpha (0.1f);
-                lineSeries.Style.AreaColorLowGradient = TintColor.ColorWithAlpha (0.8f);
-                lineSeries.Style.AreaLineWidth = 1.0;
-                lineSeries.CrosshairEnabled = true;
+                if (dataSeriesIndex == 0) {
+                    lineSeries.Style.ShowFill = true;
+                    lineSeries.Style.AreaLineColor = TintColor;
+                    lineSeries.Style.AreaColor = TintColor.ColorWithAlpha (0.1f);
+                    lineSeries.Style.AreaColorLowGradient = TintColor.ColorWithAlpha (0.8f);
+                    lineSeries.Style.AreaLineWidth = 1.0;
+                    lineSeries.CrosshairEnabled = true;
+                } else {
+                    lineSeries.Style.LineColor = UIColor.Red.ColorWithAlpha (0.8f);
+                    lineSeries.Style.LineWidth = 1.0;
+                    lineSeries.Style.ShowFill = false;
+                    lineSeries.CrosshairEnabled = false;
+                }
 
                 return lineSeries;
             }
 
             public override int GetNumberOfDataPoints (ShinobiChart chart, int dataSeriesIndex)
             {
-                return _dataPoints.Count;
+                if (dataSeriesIndex == 0) {
+                    return _dataPoints.Count;
+                } else {
+                    return _movingAverageDataPoints.Count;
+                }
             }
 
             public override SChartData GetDataPoint (ShinobiChart chart, int dataIndex, int dataSeriesIndex)
@@ -173,7 +216,11 @@ namespace ShinobiStockChart.Touch.Views
 
             protected override SChartData[] GetDataPoints (ShinobiChart chart, int dataSeriesIndex)
             {
-                return _dataPoints.ToArray ();
+                if (dataSeriesIndex == 0) {
+                    return _dataPoints.ToArray ();
+                } else {
+                    return _movingAverageDataPoints.ToArray ();
+                }
             }
 
         }

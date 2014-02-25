@@ -15,6 +15,10 @@ namespace ShinobiStockChart.Core.Presenter
         {
             void UpdateChartWithData (List<ChartDataPoint> data);
 
+            void UpdateChartWithMovingAverage (List<ChartDataPoint> data);
+
+            event EventHandler<MovingAverageRequestedEventArgs> MovingAverageRequested;
+
             string ChartTitle { set; }
         }
 
@@ -43,10 +47,28 @@ namespace ShinobiStockChart.Core.Presenter
             _view = view;
             _view.ChartTitle = _stockItem.Symbol;
 
+            _view.MovingAverageRequested += HandleMovingAverageRequested;
+
             // if we already have data - supply it to the chart
             if (_chartData != null) {
                 _view.UpdateChartWithData (_chartData);
             }
+        }
+
+        void HandleMovingAverageRequested (object sender, MovingAverageRequestedEventArgs e)
+        {
+            // Create the moving average values
+            var movingAverage = _chartData
+                            .Window (e.NumberOfDays, window => {
+                return new ChartDataPoint () {
+                    XValue = window.Last ().XValue,
+                    YValue = window.Select (dp => dp.YValue).Average ()
+                };
+            })
+                            .ToList ();
+
+            // Send the result back to the the view
+            _view.UpdateChartWithMovingAverage (movingAverage);
         }
 
 
