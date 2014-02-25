@@ -29,7 +29,14 @@ namespace ShinobiStockChart.Touch.Views
 
         public void UpdateChartWithData (List<ChartDataPoint> data)
         {
-            Console.WriteLine ("UpdateChartWithData requested");
+            _dataSource.DataPoints = data.Select (dp => new SChartDataPoint () {
+                XValue = dp.XValue.ToNSDate (),
+                YValue = new NSNumber (dp.YValue)
+            })
+                            .Cast<SChartData> ()
+                            .ToList (); 
+            _chart.ReloadData ();
+            _chart.RedrawChart ();
 
             progressIndicatorView.Hidden = true;
             chartHostView.Hidden = false;
@@ -39,6 +46,7 @@ namespace ShinobiStockChart.Touch.Views
 
         private ShinobiChart _chart;
         private string _chartTitle;
+        private StockChartDataSource _dataSource;
 
         public StockChartViewController (StockChartPresenter presenter) : base ("StockChartViewController", null)
         {
@@ -58,6 +66,9 @@ namespace ShinobiStockChart.Touch.Views
             }
 
             // set the datasource
+            _dataSource = new StockChartDataSource ();
+            _dataSource.TintColor = View.TintColor;
+            _chart.DataSource = _dataSource;
  
             // add a couple of axes
             _chart.XAxis = new SChartDateTimeAxis ();
@@ -74,7 +85,7 @@ namespace ShinobiStockChart.Touch.Views
             progressIndicatorView.Layer.ShadowOffset = new SizeF (0f, 3f);
       
             chartHostView.Hidden = true;
-            //chartHostView.InsertSubview (_chart, 0);
+            chartHostView.InsertSubview (_chart, 0);
 
             // Add a nav bar button to add a trend line
             NavigationItem.SetRightBarButtonItem (
@@ -105,6 +116,59 @@ namespace ShinobiStockChart.Touch.Views
             axis.EnableMomentumPanning = true;
             axis.EnableMomentumZooming = true;
             axis.Style.MajorGridLineStyle.ShowMajorGridLines = false;
+        }
+
+        private class StockChartDataSource : SChartDataSource
+        {
+            private List<SChartData> _dataPoints;
+
+            public List<SChartData> DataPoints {
+                get {
+                    return _dataPoints;
+                }
+                set {
+                    _dataPoints = value;
+                }
+            }
+
+            public StockChartDataSource ()
+            {
+                _dataPoints = new List<SChartData> ();
+            }
+
+            public UIColor TintColor { get; set; }
+
+            #region implemented abstract members of SChartDataSource
+
+            public override int GetNumberOfSeries (ShinobiChart chart)
+            {
+                return 1;
+            }
+
+            public override SChartSeries GetSeries (ShinobiChart chart, int dataSeriesIndex)
+            {
+                var lineSeries = new SChartLineSeries ();
+                return lineSeries;
+            }
+
+            public override int GetNumberOfDataPoints (ShinobiChart chart, int dataSeriesIndex)
+            {
+                return _dataPoints.Count;
+            }
+
+            public override SChartData GetDataPoint (ShinobiChart chart, int dataIndex, int dataSeriesIndex)
+            {
+                // no-op
+                return null;
+            }
+
+            #endregion
+
+            protected override SChartData[] GetDataPoints (ShinobiChart chart, int dataSeriesIndex)
+            {
+                return _dataPoints.ToArray ();
+            }
+
         }
 
     }
