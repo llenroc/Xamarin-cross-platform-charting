@@ -24,13 +24,7 @@ namespace ShinobiStockChart.Droid.Views
 
         public void UpdateChartWithData (List<ChartDataPoint> data)
         {
-            if (_priceSeries == null) {
-                _priceSeries = new LineSeries ();
-                _chart.AddSeries (_priceSeries);
-            }
-            _priceSeries.DataAdapter = new SimpleDataAdapter ();
-            _priceSeries.DataAdapter.AddAll (data.Select (dp => 
-				new DataPoint (DateUtils.ConvertToJavaDate (dp.XValue), dp.YValue)).ToList ());
+            Console.WriteLine ("UpdateChartWithData requested");
             _progressDialog.Dismiss ();
         }
 
@@ -49,7 +43,6 @@ namespace ShinobiStockChart.Droid.Views
 
         private StockChartPresenter _presenter;
         private IShinobiChart _chart;
-        private LineSeries _priceSeries;
         private String _chartTitle;
         private ProgressDialog _progressDialog;
 
