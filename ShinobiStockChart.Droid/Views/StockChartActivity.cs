@@ -100,7 +100,7 @@ namespace ShinobiStockChart.Droid.Views
             // Get the chart and configure it
             var chartFrag = FragmentManager.FindFragmentById<ChartFragment> (Resource.Id.chart);
             _chart = chartFrag.ShinobiChart;
-            _chart.SetLicenseKey ("<PUT YOUR LICENSE KEY HERE>");
+            _chart.SetTrialKey ("<PUT YOUR TRIAL KEY HERE>");
 
             _chart.XAxis = new DateTimeAxis ();
             _chart.XAxis.EnableGestures ();
