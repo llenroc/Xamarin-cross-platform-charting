@@ -12,27 +12,23 @@ apps.
 
 ## Getting Started
 
-### Shinobi License Keys
+### Shinobi Trial Keys
 
-This project has been built using the trial versions of ShinobiCharts for iOS
-ShinobiCharts for Android - available from the Xamarin component store. Therefore,
-when you open the solution file in Xamarin Studio, the components should be
-magically installed for you.
+This project has been built using the trial versions of **shinobicontrols** for iOS
+and for Android - available from the 
+[ShinobiControls website](https://www.shinobicontrols.com).
 
-Since we're using the trial versions you'll be issued with license keys for each
-component when they are first downloaded from the component store. You can access
-these licence keys by logging in to the component store via the web interface,
-selecting your account and viewing 'My Components'. Form here you can select your
-trial components from your list of components in order to find your trial keys.
+Since we're using the trial versions you'll be emailed trial keys for each
+version when you download the trials.
 
-There are 2 files which require license keys - `StockChartViewController.cs` for
+There are 2 files which require trial keys - `StockChartViewController.cs` for
 the iOS project:
 
-    _chart.LicenseKey = @"<PUT YOUR LICENSE KEY HERE>";
+    ShinobiCharts.TrialKey = @"<PUT YOUR TRIAL KEY HERE>";
 
 And `StockChartActivity.cs` in the Android project:
 
-    _chart.SetLicenseKey ("<PUT YOUR LICENSE KEY HERE>");
+    _chart.SetTrialKey ("<PUT YOUR TRIAL KEY HERE>");
 
 
 ### Minimum Versions
